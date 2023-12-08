@@ -10,7 +10,13 @@ url = "https://github.com/lukeburden/django-konst"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-tests_require = ["pytest", "pytest-django", "djangorestframework>=3.10"]
+tests_require = [
+    "pytest",
+    "pytest-django",
+    "djangorestframework>=3.10",
+    "graphene>=3.3",
+    "graphene-django>=3.1.5",
+]
 
 setup(
     name=name,

@@ -9,6 +9,8 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils.encoding import force_text
 
+from graphene import ObjectType, Schema
+
 from rest_framework import serializers
 
 from konst import Constant, ConstantGroup, Constants, json
@@ -256,3 +258,42 @@ class DRFConstantChoiceFieldTestCase(TestCase):
         self.assertTrue(instance.colour.red)
         self.assertTrue(instance.purpose.eating)
         self.assertTrue(instance.purpose.culinary)
+
+
+class GrapheneConstantChoiceFieldTestCase(TestCase):
+
+    fixtures = ["test_apples"]
+
+    def test_graphene(self):
+        class AppleType(ObjectType):
+            purpose = DRFConstantChoiceField(Apple.purposes)
+            colour = DRFConstantChoiceField(Apple.colours)
+
+        class Query(ObjectType):
+            apple = AppleType()
+
+            def resolve_apple(self, info):
+                return Apple.objects.all().first()
+
+        schema = Schema(query=Query)
+        result = schema.execute(
+            """
+            {
+                apple {
+                    name
+                    colour
+                    purpose
+                }
+            }
+            """
+        )
+        self.assertEqual(
+            result.data,
+            {
+                "apple": {
+                    "name": "Granny Smith",
+                    "colour": "green",
+                    "purpose": "cooking",
+                }
+            },
+        )
